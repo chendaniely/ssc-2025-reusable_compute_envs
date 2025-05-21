@@ -1,6 +1,8 @@
 # ssc-2025-reusable_compute_envs
 SSC 2025 Talk
 
+Program: <https://ssc.ca/en/meeting/annual/program>
+
 <https://ssc.ca/en/meeting/annual/presentation/it-works-my-machine-creating-reusable-compute-environments-research-and>
 
 ## Abstract
