@@ -1,6 +1,8 @@
 # ssc-2025-reusable_compute_envs
 SSC 2025 Talk
 
+<https://ssc.ca/en/meeting/annual/presentation/it-works-my-machine-creating-reusable-compute-environments-research-and>
+
 ## Abstract
 
 Code is the foundation of reproducible and replicable research, ensuring transparency in how data is processed, transformed, and analyzed. However, code alone isn't enough. Without the right computational environment, results may not be consistent across different machines, time periods, or collaborators.
