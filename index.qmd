@@ -7,6 +7,7 @@ format:
   revealjs:
     smaller: true
     theme: [default, custom.scss]
+    css: styles.css
     #navigation-mode: grid
     slide-number: true
 
@@ -17,58 +18,79 @@ format:
 
     multiplex: true
 
-
 editor:
   render-on-save: true
 ---
 
-# Hello
-
-## Daniel Chen
-
 # The scenario
 
-## You're ready
+<!--TODO: fix QR code URL for multiplex-->
 
-Install R
+## R
+
+CRAN: <https://cran.r-project.org/>
+
+![](img/download-r.png){.img-shadow}
 
 ## RStudio
 
-Install RStudio
+Install RStudio: <https://posit.co/download/rstudio-desktop/>
 
-## Positron (Beta)^[Positron: <https://positron.posit.co/>]
+![](img/rstudio.png)
+
+## Positron (Beta)
+
+<https://positron.posit.co/>
 
 ![](img/positron.png){height="500"}
 
 ## You start an analysis
 
+. . .
+
 ```r
 library(tidyverse)
 ```
 
+. . .
+
 <br>
 Oh! but you don't have it installed (or want to update)
+
+. . .
 
 ```r
 install.packages('tidyverse')
 ```
 
+. . .
+
 <br>
 Now you need to read in Qualtrics data
+
+. . .
 
 ```r
 install.packages('qualtRics')
 ```
 
+. . .
+
 <br>
 now you need data to make [reprexes](https://reprex.tidyverse.org/) (reproducible examples)
+
+. . .
 
 ```r
 install.packages('palmerpenguins')
 ```
 
+. . .
+
 <br>
 Now you can begin...
+
+. . .
 
 ```r
 library(tidyverse)      # data cleaning
@@ -78,12 +100,18 @@ library(palmerpenguins) # creating examples to debug code
 
 ## Now you need more packages
 
+. . .
+
 ```r
-install.packages(c('ggally', 'tidymodels'))
+install.packages(c('GGally', 'tidymodels'))
 ```
+
+. . .
 
 <br>
 and more...
+
+. . .
 
 ```r
 install.packages('censored')
@@ -91,44 +119,256 @@ install.packages('censored')
 
 ## Now R updates...
 
-You update R...
+- You update R...
+- But what about your packages? what if you don't want to update R?
+- Do yuo update everything and re-run your code and hope nothing breaks?
 
-But what about your packages? what if you don't want to update R?
+- What if you didn't update but you have a new team member who has latest?
 
-Do yo update everything and re-run your code and hope nothing breaks?
-
-What if you didn't update but you have a new team member who has latest?
-
-- what if this isn't an analysis, but a Package?
+- What if this isn't an analysis, but a Package?
   - Your packages _must_ work with current and `devel` versions of R
+
+## What can go wrong?
+
+- Example: `{dplyr}` reverse imports (i.e., packages that import `{dplyr}`)
+
+![](img/dplyr-reverse_imports.png){.img-shadow}
+
+
+## Dependency hell
+
+:::: {.columns}
+
+::: {.column width="60%"}
+![](img/definition-dependency_hell.png){.img-shadow}
+:::
+
+::: {.column width="40%"}
+- At any given time all packages in CRAN work and build together
+- But package and function behaviors can still change
+:::
+
+::::
 
 
 # Tooling Solutions
 
-## Package versions: `renv`
+# Package Management
 
-`renv`: <https://rstudio.github.io/renv/articles/renv.html>
+## Package versions: `{renv}`
 
-## R verions: `rig`
+`{renv}`: <https://rstudio.github.io/renv/articles/renv.html>
+
+![](img/logo-renv.svg)
+
+## `{renv}`
+- Your R packages only exist in 1 system library for each version of R.
+
+![](img/renv-overview.png){.img-shadow}
+
+- `install.packages()` or `renv::install()` will both work
+
+## `renv::init()`
+
+- Turns current working directory / project into an `renv` environment
+
+```bash
+$ Rscript -e "renv::init()"
+The following package(s) will be updated in the lockfile:
+
+# CRAN -----------------------------------------------------------------------
+- renv   [* -> 1.1.4]
+
+The version of R recorded in the lockfile will be updated:
+- R      [* -> 4.5.0]
+
+- Lockfile written to "~/temp/ssc-renv/renv.lock".
+```
+
+Files created
+
+```bash
+$ ls -aF
+./  ../  renv/  renv.lock  .Rprofile
+```
+
+## `.Rprofile`
+
+- This file runs every time R starts^[<https://rstats.wtf/r-startup.html> ]
+  - Looks first in the current working directory
+  - Then looks for `~/.Rprofile`
+  - Finally in system location (.`Rprofile.site`)
+
+- `renv` creates a `.Rprofile` in your current working directory
+
+```bash
+$ cat .Rprofile
+source("renv/activate.R")
+```
+
+## `./renv/`
+
+- Contains everything to load up the `renv` environment.
+- Typically will not need to do anything in here
+- Your `renv` installed packages will be installed in the `library/` directory
+
+```bash
+$ ls -aF
+./  ../  activate.R  .gitignore  library/  settings.json
+```
+
+## `libPaths()`
+
+- Order of locations (i.e., paths) where R will look for installed packages.
+
+Normally:
+
+```{.bash code-line-numbers="1,2"}
+> .libPaths()
+[1] "/home/dan/R/x86_64-pc-linux-gnu-library/4.5"
+[2] "/usr/lib/R/library"
+```
+
+With `{renv}` enabled:
+
+```{.bash code-line-numbers="2,3"}
+.- Project '~/temp/ssc-renv' loaded. [renv 1.1.4]
+> .libPaths()
+[1] "/home/dan/temp/ssc-renv/renv/library/linux-arch-rolling/R-4.5/x86_64-pc-linux-gnu"
+[2] "/home/dan/.cache/R/renv/sandbox/linux-arch-rolling/R-4.5/x86_64-pc-linux-gnu/9a444a72"
+```
+
+## `renv.lock` {footer=false}
+
+- A "lock" file will list all the packages, its version, installation location, and its dependencies
+
+`renv.lock` for just `{tidyverse}`
+
+```bash
+$ wc -l renv.lock
+4090 renv.lock
+```
+
+```{.bash code-block-height="200px"}
+{{< include includes/renv.lock >}}
+```
+
+## `install.packages()` / `renv::install()`
+
+- Install your packages link you normally do.
+
+:::{.callout-important}
+You have to actually **USE** your package.
+Just installing it will not be picked up by `renv::snapshot()`.
+
+This is literally the first FAQ,
+"Why isn't my package being snapshotted into the lockfile"?
+^[<https://rstudio.github.io/renv/articles/faq.html#why-isnt-my-package-being-snapshotted-into-the-lockfile>]
+:::
+
+## `renv::snapshot()`
+
+- Finds packages from `library()` or `package::function()` calls, or in the `DESCRIPTION` file
+
+If you use a package you do not have installed yet it'll try to install it for you
+
+```r
+The following required packages are not installed:
+- tidyverse
+Packages must first be installed before renv can snapshot them.
+Use `renv::dependencies()` to see where this package is used in your project.
+
+What do you want to do?
+
+1: Snapshot, just using the currently installed packages.
+2: Install the packages, then snapshot.
+3: Cancel, and resolve the situation on your own.
+
+Selection: 2
+```
+
+## `renv::restore()`
+
+- Updates, downloads, or installs packages from the `renv.lock` file
+- Usually if someone else adds new package to the project.
+
+
+## Summary: `{renv}`
+
+- Use `{renv}` to snapshot all the packages you **use** ^[<https://rstudio.github.io/renv/articles/faq.html#why-isnt-my-package-being-snapshotted-into-the-lockfile>].
+  - `DESCRIPTION` or `script.R`
+- Not a panacea for reproducibility ^[<https://rstudio.github.io/renv/articles/renv.html#caveats>]
+  - Only tracks **R packages**
+  - **Does not** help with:
+    - R versions (just tracks)
+    - Non-R software (e.g., `pandoc` for RMarkdown/Quarto documents, `PROJ` for geocoding)
+    - Operating systems, system libraries, compiler versions
+
+# Language Management
+
+## R Versions: `rig`
 
 `rig`: <https://github.com/r-lib/rig>
 
+- `rig` is a system tool (i.e., not an R package) that aims to solve the issue of managing different **versions** of R itself
+  - R `4.5.0`, R `4.4.1`, R `4.3.2`, R `4.1.2`, etc...
+
+```{.bash code-line-numbers="1,2,3,4,6,9"}
+$ rig --help
+rig add        -- install a new R version [alias: install]
+rig available  -- List R versions available to install.
+rig default    -- print or set default R version [alias: switch]
+rig library    -- manage package libraries [alias: lib] (experimental)
+rig list       -- list installed R versions [alias: ls]
+rig resolve    -- resolve a symbolic R version
+rig rm         -- remove R versions [aliases: del, delete, remove]
+rig rstudio    -- start RStudio with the specified R version
+rig run        -- Run R, an R script or an R project
+rig sysreqs    -- manage R-related system libraries and tools (experimental) (macOS)
+rig system     -- manage current installations
+```
+
+Positron lets you toggle between different R versions in the `R: Select Interpreter` command pallet
+
+## Using `rig`
+
+## Quarto Version Manager
+
+`qvm`: <https://github.com/dpastoor/qvm>
+
+- Similar to `rig`
+
+
+# System Management
+
 # Docker
+
+
 
 ## What is Docker?
 
-- container
-- let me re-install everything from scratch
-- if it works on my machine ... let me give you my machine
+:::: {.columns}
 
-Challenges getting an image to work on all platforms:
+::: {.column width="20%"}
+![](img/docker-logos/SVG/docker-mark-blue.svg)
+:::
 
-- ARM Mac
-- ARM Windows
-- Intel Windows
-- Intel Linux
+::: {.column width="80%"}
+> If it works on my machine ... let me give you my machine
 
-## Termology
+- Installs everything from scratch
+- Share as a container
+:::
+
+::::
+
+Challenge - getting an image to work on all platforms:
+
+- (ARM, Intel) x (Windows, Mac, Linux) = 6 combinations
+
+![](img/logo-podman.png){height="200" style="display: block; margin-left: auto;"}
+
+## Terminology
 
 Host vs container
 
@@ -142,7 +382,10 @@ e.g., Host = Mac ARM, Container OS = Ubuntu Linux
 
 ## Remote Container Execution
 
-# GitHub Actions
+# Automation
+
+# <!-- ... -->
+<h1>GitHub Actions <span class="github-spinner"></span></h1>
 
 ## What is GitHub Actions?
 
@@ -180,20 +423,25 @@ Changes to the codebase will trigger:
 
 ## What about Python?
 
-rig - `uv`, `pyenv`, `conda`
-renv - `venv`, `conda`, `conda.lock`
-DESCRIPTION - `requirements.txt`, `environment.yml`
-
+| Task                | R           | Python                                        |
+|---------------------|-------------|-----------------------------------------------|
+| Version my language | rig         | uv, pyenv, conda                              |
+| Version my packages | renv        | requirements.txt, environment.yml, conda.lock |
+| Virtual environment | renv        | venv, conda                                   |
+| Metadata            | DESCRIPTION | pyproject.toml                                |
+|                     |             |                                               |
 # UBC Courses
 
 ## MDS + Undergrad
 
-DSCI 521: Computing Platforms for Data Science
+DSCI 521^[Computing Platforms for Data Science]
 
   - URL: <https://ubc-mds.github.io/DSCI_521_platforms-dsci_book/>
   - Repo: <https://github.com/UBC-MDS/DSCI_521_platforms-dsci_book>
 
-DSCI 310, DSCI 522, DSCI 524
+DSCI 310^[Reproducible and Trustworthy Workflows for Data Science],
+DSCI 522^[Data Science Workflows],
+DSCI 524^[Collaborative Software Development]
 
 - Reproducible and Trustworthy Workflows for Data Science
   - URL: <https://ubc-dsci.github.io/reproducible-and-trustworthy-workflows-for-data-science/>
@@ -202,7 +450,7 @@ DSCI 310, DSCI 522, DSCI 524
 
 # Give it a try!
 
-## Links!
+## Links! {footer=false}
 
 - Slides: <https://github.com/chendaniely/ssc-2025-reusable_compute_envs>
 
