@@ -1,0 +1,62 @@
+/*-- scss:defaults --*/
+@font-face {
+  font-family: 'Atkinson Hyperlegible';
+  font-style: normal;
+  font-weight: 400;
+  src: url('https://cdn.jsdelivr.net/gh/google/fonts/ofl/atkinsonhyperlegible/AtkinsonHyperlegible-Regular.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Atkinson Hyperlegible';
+  font-style: normal;
+  font-weight: 700;
+  src: url('https://cdn.jsdelivr.net/gh/google/fonts/ofl/atkinsonhyperlegible/AtkinsonHyperlegible-Bold.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Atkinson Hyperlegible Mono';
+  font-style: normal;
+  font-weight: 400;
+  src: url('https://cdn.jsdelivr.net/gh/google/fonts/ofl/atkinsonhyperlegiblemono/AtkinsonHyperlegibleMono-Regular.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Atkinson Hyperlegible Mono';
+  font-style: normal;
+  font-weight: 700;
+  src: url('https://cdn.jsdelivr.net/gh/google/fonts/ofl/atkinsonhyperlegiblemono/AtkinsonHyperlegibleMono-Bold.ttf') format('truetype');
+}
+
+/* Set Quarto SCSS theme variables */
+$font-family-sans-serif: 'Atkinson Hyperlegible', sans-serif;
+$font-family-monospace: 'Atkinson Hyperlegible Mono', monospace;
+
+/* Optional: apply font manually in case theme doesn't fully propagate */
+body {
+  font-family: $font-family-sans-serif;
+}
+
+// colors
+// Light mode
+$body-bg: #F6F5F3; // Soft Ivory
+$body-color: #2D2D2D; // Charcoal
+$text-muted: #9B9B9B; // Approx. lighten($body-color, 50%)
+$link-color: #FF6B35; // Burnt Orange (accent)
+$link-color-hover: #FF884D; // Slightly lighter orange for hover
+$selection-bg: #FFD4B8; // Light background version of orange
+$selection-color: #F6F5F3; // Soft Ivory
+
+$light-bg-text-color: #2D2D2D;
+$light-bg-link-color: #FF6B35;
+$light-bg-code-color: #3E4C59; // Slate Gray for subtle inline code
+
+// Dark mode
+$dark-bg-text-color: #F6F5F3; // Soft Ivory as light-on-dark text
+$dark-bg-link-color: #FFA270; // Lighter burnt orange
+$dark-bg-code-color: #C1BDB3; // Warm taupe for contrast
+
+/*-- scss:rules --*/
+
+.reveal a {
+  line-height: 1.3em;
+}

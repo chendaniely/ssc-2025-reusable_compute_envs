@@ -1,0 +1,220 @@
+---
+title: "But It Works on My Machine..."
+subtitle: |
+  Creating Reusable Compute Environments for Research and Teaching
+  ![](img/qr-code.png){height="400"}
+format:
+  revealjs:
+    smaller: true
+    theme: [default, custom.scss]
+    #navigation-mode: grid
+    slide-number: true
+
+    footer: >
+      Daniel Chen.
+      [SSC 2025](https://ssc.ca/en/meetings/annual/2025-ssc-annual-meeting-saskatoon).
+      <https://github.com/chendaniely/ssc-2025-reusable_compute_envs>
+
+    multiplex: true
+
+
+editor:
+  render-on-save: true
+---
+
+# Hello
+
+## Daniel Chen
+
+# The scenario
+
+## You're ready
+
+Install R
+
+## RStudio
+
+Install RStudio
+
+## Positron (Beta)^[Positron: <https://positron.posit.co/>]
+
+![](img/positron.png){height="500"}
+
+## You start an analysis
+
+```r
+library(tidyverse)
+```
+
+<br>
+Oh! but you don't have it installed (or want to update)
+
+```r
+install.packages('tidyverse')
+```
+
+<br>
+Now you need to read in Qualtrics data
+
+```r
+install.packages('qualtRics')
+```
+
+<br>
+now you need data to make [reprexes](https://reprex.tidyverse.org/) (reproducible examples)
+
+```r
+install.packages('palmerpenguins')
+```
+
+<br>
+Now you can begin...
+
+```r
+library(tidyverse)      # data cleaning
+library(qualtRics)      # loading your data
+library(palmerpenguins) # creating examples to debug code
+```
+
+## Now you need more packages
+
+```r
+install.packages(c('ggally', 'tidymodels'))
+```
+
+<br>
+and more...
+
+```r
+install.packages('censored')
+```
+
+## Now R updates...
+
+You update R...
+
+But what about your packages? what if you don't want to update R?
+
+Do yo update everything and re-run your code and hope nothing breaks?
+
+What if you didn't update but you have a new team member who has latest?
+
+- what if this isn't an analysis, but a Package?
+  - Your packages _must_ work with current and `devel` versions of R
+
+
+# Tooling Solutions
+
+## Package versions: `renv`
+
+`renv`: <https://rstudio.github.io/renv/articles/renv.html>
+
+## R verions: `rig`
+
+`rig`: <https://github.com/r-lib/rig>
+
+# Docker
+
+## What is Docker?
+
+- container
+- let me re-install everything from scratch
+- if it works on my machine ... let me give you my machine
+
+Challenges getting an image to work on all platforms:
+
+- ARM Mac
+- ARM Windows
+- Intel Windows
+- Intel Linux
+
+## Termology
+
+Host vs container
+
+e.g., Host = Mac ARM, Container OS = Ubuntu Linux
+
+## RStudio Server in the container
+
+## Mount your project folder
+
+## VS Code + Positron
+
+## Remote Container Execution
+
+# GitHub Actions
+
+## What is GitHub Actions?
+
+Platform for:
+
+- Continuous Integration (CI)
+- Continuous Deployment/Delivery (CD)
+
+Automations for:
+
+- automated workflows
+- **build**, test, and deploy code
+
+## GitHub for Analysis
+
+Changes to the codebase will trigger:
+
+1. Getting the new code
+2. Rebuild the compute environment
+3. Run all the code
+
+## This Presentation
+
+1. Change the `index.qmd`
+2. Push changes to GitHub
+3. GitHub Actions will note the changes
+4. Changes will trigger a workflow
+5. GHA will get the updated code
+6. GHA creates a new runner
+7. GHA installs all the packages and tools
+8. GHA renders the presentation
+9. GHA publishes the updated slides to GitHub Pages
+
+# Python?
+
+## What about Python?
+
+rig - `uv`, `pyenv`, `conda`
+renv - `venv`, `conda`, `conda.lock`
+DESCRIPTION - `requirements.txt`, `environment.yml`
+
+# UBC Courses
+
+## MDS + Undergrad
+
+DSCI 521: Computing Platforms for Data Science
+
+  - URL: <https://ubc-mds.github.io/DSCI_521_platforms-dsci_book/>
+  - Repo: <https://github.com/UBC-MDS/DSCI_521_platforms-dsci_book>
+
+DSCI 310, DSCI 522, DSCI 524
+
+- Reproducible and Trustworthy Workflows for Data Science
+  - URL: <https://ubc-dsci.github.io/reproducible-and-trustworthy-workflows-for-data-science/>
+  - Repo: <https://github.com/UBC-DSCI/reproducible-and-trustworthy-workflows-for-data-science/>
+
+
+# Give it a try!
+
+## Links!
+
+- Slides: <https://github.com/chendaniely/ssc-2025-reusable_compute_envs>
+
+- Positron IDE: <https://positron.posit.co/>
+
+- DSCI 521: Computing Platforms for Data Science
+  - URL: <https://ubc-mds.github.io/DSCI_521_platforms-dsci_book/>
+  - Repo: <https://github.com/UBC-MDS/DSCI_521_platforms-dsci_book>
+
+- Reproducible and Trustworthy Workflows for Data Science
+  - URL: <https://ubc-dsci.github.io/reproducible-and-trustworthy-workflows-for-data-science/>
+  - Repo: <https://github.com/UBC-DSCI/reproducible-and-trustworthy-workflows-for-data-science/>
+
+- Font, Atkinson Hyperlegible: <https://www.brailleinstitute.org/freefont/>
+- Quarto Multiplex: <https://quarto.org/docs/presentations/revealjs/presenting.html#multiplex>
