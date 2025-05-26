@@ -16,7 +16,11 @@ format:
       [SSC 2025](https://ssc.ca/en/meetings/annual/2025-ssc-annual-meeting-saskatoon).
       <https://github.com/chendaniely/ssc-2025-reusable_compute_envs>
 
-    multiplex: true
+    multiplex:
+      url: 'https://chendaniely.github.io/ssc-2025-reusable_compute_envs'
+      secret: ''
+      id: 'aec88102bc66c401'
+
 
 editor:
   render-on-save: true
