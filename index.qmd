@@ -330,20 +330,94 @@ rig system     -- manage current installations
 
 Positron lets you toggle between different R versions in the `R: Select Interpreter` command pallet
 
-## Using `rig`
+## `rig`: list installed
 
-## Quarto Version Manager
+- `rig list` will show all installed versions of R
+
+```bash
+$ rig list
+* name       version    aliases
+------------------------------------------
+  4.1-arm64  (R 4.1.3)
+  4.2-arm64  (R 4.2.2)
+  4.3-arm64  (R 4.3.2)
+  4.4-arm64  (R 4.4.2)
+* 4.5-arm64  (R 4.5.0)  release
+```
+
+- Currently on R 4.5.0
+
+```bash
+$ R --version
+R version 4.5.0 (2025-04-11) -- "How About a Twenty-Six"
+```
+
+## `rig`: switch R version
+
+- `rig default` sets the new default version
+
+```bash
+$ rig default 4.1-arm64
+```
+
+<br>
+
+```bash
+$ R --version
+R version 4.1.3 (2022-03-10) -- "One Push-Up"
+```
+
+<br>
+
+```bash
+$ rig list
+* name       version    aliases
+------------------------------------------
+* 4.1-arm64  (R 4.1.3)
+  4.2-arm64  (R 4.2.2)
+  4.3-arm64  (R 4.3.2)
+  4.4-arm64  (R 4.4.2)
+  4.5-arm64  (R 4.5.0)  release
+```
+
+
+## `qvm`: Quarto Version Manager
 
 `qvm`: <https://github.com/dpastoor/qvm>
 
 - Similar to `rig`
 
+```{.bash code-line-numbers="1,5,9,10,11,13"}
+$ qvm --help
+quarto version manager
+
+Usage:
+  qvm [command]
+
+Available Commands:
+  completion  Generate the autocompletion script for the specified shell
+  debug       debug
+  help        Help about any command
+  init        initialize qvm
+  install     install a given quarto version
+  ls          list versions
+  path        get the path to the active quarto executable
+  rm          remove a version of quarto
+  use         use a version of quarto
+
+Flags:
+  -h, --help              help for qvm
+      --loglevel string   log level (default "info")
+  -v, --version           version for qvm
+
+Use "qvm [command] --help" for more information about a command.
+
+```
+
 
 # System Management
 
 # Docker
-
-
 
 ## What is Docker?
 
@@ -368,6 +442,15 @@ Challenge - getting an image to work on all platforms:
 
 ![](img/logo-podman.png){height="200" style="display: block; margin-left: auto;"}
 
+## Do you need Docker?
+
+- Between `renv`, `rig`, and `qvm` you probably can get away with the vast majority of your work.
+
+- If you transition into Docker, you won't need `rig` or `qvm`
+  since the non R package versions will be directly installed into the Docker container.
+
+- Docker has its own challenges and complexities if you want to work on your codebase in real-time.
+
 ## Terminology
 
 Host vs container
@@ -378,7 +461,13 @@ e.g., Host = Mac ARM, Container OS = Ubuntu Linux
 
 ## Mount your project folder
 
+- This is the part that is tricky if you are using `renv`
+- the `.Rprofile` and `renv/` directory will overwrite whatever has been installed in the container
+
 ## VS Code + Positron
+
+- Tools for working with containers
+- No more RStudio!
 
 ## Remote Container Execution
 
