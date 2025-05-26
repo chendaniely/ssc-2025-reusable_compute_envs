@@ -16,9 +16,10 @@ format:
       [SSC 2025](https://ssc.ca/en/meetings/annual/2025-ssc-annual-meeting-saskatoon).
       <https://github.com/chendaniely/ssc-2025-reusable_compute_envs>
 
+    # generate token here: https://reveal-multiplex.glitch.me/
     multiplex:
       url: 'https://chendaniely.github.io/ssc-2025-reusable_compute_envs'
-      secret: ''
+      secret: '17482981036363397299'
       id: 'aec88102bc66c401'
 
 
