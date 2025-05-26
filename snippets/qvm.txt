@@ -1,0 +1,23 @@
+$ qvm --help
+quarto version manager
+
+Usage:
+  qvm [command]
+
+Available Commands:
+  completion  Generate the autocompletion script for the specified shell
+  debug       debug
+  help        Help about any command
+  init        initialize qvm
+  install     install a given quarto version
+  ls          list versions
+  path        get the path to the active quarto executable
+  rm          remove a version of quarto
+  use         use a version of quarto
+
+Flags:
+  -h, --help              help for qvm
+      --loglevel string   log level (default "info")
+  -v, --version           version for qvm
+
+Use "qvm [command] --help" for more information about a command.
