@@ -18,7 +18,6 @@ format:
 
     # generate token here: https://reveal-multiplex.glitch.me/
     multiplex:
-      url: 'https://chendaniely.github.io/ssc-2025-reusable_compute_envs'
       secret: '17482981036363397299'
       id: 'aec88102bc66c401'
 
