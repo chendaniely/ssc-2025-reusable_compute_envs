@@ -194,7 +194,7 @@
 
 <section id="title-slide" class="quarto-title-block center">
   <h1 class="title">But It Works on My Machine…</h1>
-  <p class="subtitle"></p><p>Creating Reusable Compute Environments for Research and Teaching <img data-src="img/qr-code.png" height="400"></p><p></p>
+  <p class="subtitle"></p><p>Creating Reusable Compute Environments for Research and Teaching <img data-src="img/qr-code.png" height="350"></p><p></p>
 
 <div class="quarto-title-authors">
 </div>
@@ -4749,6 +4749,61 @@ GitHub Actions <span class="github-spinner"></span>
 <li>GHA renders the presentation</li>
 <li>GHA publishes the updated slides to GitHub Pages</li>
 </ol>
+</section>
+<section id="publishing-yaml" class="slide level2">
+<h2>Publishing YAML</h2>
+<div class="sourceCode" id="cb24"><pre class="sourceCode numberSource yaml number-lines code-with-copy"><code class="sourceCode yaml"><span id="cb24-1"><a href=""></a><span class="fu">on</span><span class="kw">:</span><span class="co">                                                  # 1. Triggers:</span></span>
+<span id="cb24-2"><a href=""></a><span class="at">  </span><span class="fu">workflow_dispatch</span><span class="kw">:</span><span class="co">                                 #    manually</span></span>
+<span id="cb24-3"><a href=""></a><span class="at">  </span><span class="fu">push</span><span class="kw">:</span><span class="co">                                              #    changes to main branch</span></span>
+<span id="cb24-4"><a href=""></a><span class="at">    </span><span class="fu">branches</span><span class="kw">:</span><span class="at"> main</span><span class="co">                                   #</span></span>
+<span id="cb24-5"><a href=""></a></span>
+<span id="cb24-6"><a href=""></a><span class="fu">name</span><span class="kw">:</span><span class="at"> Quarto Publish</span><span class="co">                                 # 2. Name of workflow</span></span>
+<span id="cb24-7"><a href=""></a></span>
+<span id="cb24-8"><a href=""></a><span class="fu">jobs</span><span class="kw">:</span><span class="co">                                                # 3. Jobs to run on trigger</span></span>
+<span id="cb24-9"><a href=""></a><span class="at">  </span><span class="fu">build-deploy</span><span class="kw">:</span><span class="co">                                      # 4. Name of job</span></span>
+<span id="cb24-10"><a href=""></a><span class="at">    </span><span class="fu">runs-on</span><span class="kw">:</span><span class="at"> ubuntu-latest</span><span class="co">                           # 5. OS to run jobs on (runner)</span></span>
+<span id="cb24-11"><a href=""></a><span class="at">    </span><span class="fu">permissions</span><span class="kw">:</span></span>
+<span id="cb24-12"><a href=""></a><span class="at">      </span><span class="fu">contents</span><span class="kw">:</span><span class="at"> write</span></span>
+<span id="cb24-13"><a href=""></a><span class="at">    </span><span class="fu">steps</span><span class="kw">:</span><span class="co">                                           # 6. Steps to run during the job</span></span>
+<span id="cb24-14"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Check out repository</span><span class="co">                   # 7. Get the latest code from the repository</span></span>
+<span id="cb24-15"><a href=""></a><span class="at">        </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> actions/checkout@v4</span><span class="co">                    #</span></span>
+<span id="cb24-16"><a href=""></a></span>
+<span id="cb24-17"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Set up Quarto</span><span class="co">                          # 8. Install Quarto</span></span>
+<span id="cb24-18"><a href=""></a><span class="at">        </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> quarto-dev/quarto-actions/setup@v2</span><span class="co">     #</span></span>
+<span id="cb24-19"><a href=""></a></span>
+<span id="cb24-20"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Render and Publish</span><span class="co">                     # 9. Render and publish slides to github pages</span></span>
+<span id="cb24-21"><a href=""></a><span class="at">        </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> quarto-dev/quarto-actions/publish@v2</span><span class="co">   #</span></span>
+<span id="cb24-22"><a href=""></a><span class="at">        </span><span class="fu">with</span><span class="kw">:</span><span class="co">                                        #</span></span>
+<span id="cb24-23"><a href=""></a><span class="at">          </span><span class="fu">target</span><span class="kw">:</span><span class="at"> gh-pages</span><span class="co">                           #</span></span>
+<span id="cb24-24"><a href=""></a><span class="at">        </span><span class="fu">env</span><span class="kw">:</span><span class="co">                                         #</span></span>
+<span id="cb24-25"><a href=""></a><span class="at">          </span><span class="fu">GITHUB_TOKEN</span><span class="kw">:</span><span class="at"> ${{ secrets.GITHUB_TOKEN }}</span><span class="co">  #</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="github-actions-with-renv" class="slide level2">
+<h2>GitHub Actions with <code>renv</code></h2>
+<div class="sourceCode" id="cb25" data-code-line-numbers="8-17"><pre class="sourceCode numberSource yaml number-lines code-with-copy"><code class="sourceCode yaml"><span id="cb25-1"><a href=""></a><span class="at">    </span><span class="fu">steps</span><span class="kw">:</span></span>
+<span id="cb25-2"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Check out repository</span></span>
+<span id="cb25-3"><a href=""></a><span class="at">        </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> actions/checkout@v4</span></span>
+<span id="cb25-4"><a href=""></a></span>
+<span id="cb25-5"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Set up Quarto</span></span>
+<span id="cb25-6"><a href=""></a><span class="at">        </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> quarto-dev/quarto-actions/setup@v2</span></span>
+<span id="cb25-7"><a href=""></a></span>
+<span id="cb25-8"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Install R</span></span>
+<span id="cb25-9"><a href=""></a><span class="at">        </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> r-lib/actions/setup-r@v2</span></span>
+<span id="cb25-10"><a href=""></a><span class="at">        </span><span class="fu">with</span><span class="kw">:</span></span>
+<span id="cb25-11"><a href=""></a><span class="at">          </span><span class="fu">r-version</span><span class="kw">:</span><span class="at"> </span><span class="st">'4.5.0'</span><span class="co">                        # specify the version of R to use</span></span>
+<span id="cb25-12"><a href=""></a></span>
+<span id="cb25-13"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Install R Dependencies</span></span>
+<span id="cb25-14"><a href=""></a><span class="at">        </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> r-lib/actions/setup-renv@v2</span><span class="co">           # uses the renv.lock fil to install packages</span></span>
+<span id="cb25-15"><a href=""></a><span class="at">        </span><span class="fu">with</span><span class="kw">:</span></span>
+<span id="cb25-16"><a href=""></a><span class="at">          </span><span class="fu">cache-version</span><span class="kw">:</span><span class="at"> </span><span class="dv">1</span></span>
+<span id="cb25-17"><a href=""></a></span>
+<span id="cb25-18"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Render and Publish</span></span>
+<span id="cb25-19"><a href=""></a><span class="at">        </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> quarto-dev/quarto-actions/publish@v2</span></span>
+<span id="cb25-20"><a href=""></a><span class="at">        </span><span class="fu">with</span><span class="kw">:</span></span>
+<span id="cb25-21"><a href=""></a><span class="at">          </span><span class="fu">target</span><span class="kw">:</span><span class="at"> gh-pages</span></span>
+<span id="cb25-22"><a href=""></a><span class="at">        </span><span class="fu">env</span><span class="kw">:</span></span>
+<span id="cb25-23"><a href=""></a><span class="at">          </span><span class="fu">GITHUB_TOKEN</span><span class="kw">:</span><span class="at"> ${{ secrets.GITHUB_TOKEN }}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>docs: <a href="https://quarto.org/docs/publishing/github-pages.html#example-knitr-with-renv" class="uri">https://quarto.org/docs/publishing/github-pages.html#example-knitr-with-renv</a></p>
 </section></section>
 <section>
 <section id="python" class="title-slide slide level1 center">
