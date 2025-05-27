@@ -2,7 +2,7 @@
 title: "But It Works on My Machine..."
 subtitle: |
   Creating Reusable Compute Environments for Research and Teaching
-  ![](img/qr-code.png){height="400"}
+  ![](img/qr-code.png){height="350"}
 format:
   revealjs:
     smaller: true
