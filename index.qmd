@@ -17,9 +17,9 @@ format:
       <https://github.com/chendaniely/ssc-2025-reusable_compute_envs>
 
     # generate token here: https://reveal-multiplex.glitch.me/
-    multiplex:
-      secret: '17482981036363397299'
-      id: 'aec88102bc66c401'
+    # multiplex:
+    #   secret: ''
+    #   id: ''
 
 
 editor:
