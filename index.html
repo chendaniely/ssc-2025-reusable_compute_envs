@@ -4674,97 +4674,15 @@
 <ul>
 <li><p>Between <code>renv</code>, <code>rig</code>, and <code>qvm</code> you probably can get away with the vast majority of your work.</p></li>
 <li><p>If you transition into Docker, you won’t need <code>rig</code> or <code>qvm</code> since the non R package versions will be directly installed into the Docker container.</p></li>
-<li><p>Docker has its own challenges and complexities if you want to work on your codebase in real-time.</p></li>
-<li><p>Snapshot everything: copy your code into the container as you build the image</p></li>
-</ul>
-</section>
-<section id="rstudio-server-in-the-container" class="slide level2">
-<h2>RStudio Server in the container</h2>
-<div class="sourceCode" id="cb24"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb24-1"><a href=""></a><span class="ex">docker</span> run <span class="at">--rm</span> <span class="at">-ti</span> <span class="at">-e</span> PASSWORD=password <span class="at">-p</span> 8787:8787 rocker/rstudio</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<li><p>Docker has its own challenges and complexities if you want to work on your codebase in real-time.</p>
 <ul>
-<li>Open a web browser and navigate to <code>localhost:8787</code> and you will have access to RStudio in the container
-<ul>
-<li>User: <code>rstudio</code></li>
-<li>Password: <code>password</code></li>
+<li>Dev Container (VS Code only, Positron … Soon?)</li>
+<li>Remote SSH (VS Code + Positron)</li>
 </ul></li>
+<li><p>Snapshot everything: copy your code into the container as you build the image</p></li>
+<li><p>See Appendix slides for more Docker details</p></li>
 </ul>
-</section>
-<section id="mount-your-project-folder" class="slide level2">
-<h2>Mount your project folder</h2>
-<ul>
-<li>This is the part that is tricky if you are using <code>renv</code></li>
-<li>the <code>.Rprofile</code> and <code>renv/</code> directory will overwrite whatever has been installed in the container</li>
-</ul>
-<p>Create a <code>docker-compose.yml</code> file and run it with <code>docker-compose up -d</code></p>
-<div class="sourceCode" id="cb25"><pre class="sourceCode numberSource yaml number-lines code-with-copy"><code class="sourceCode yaml"><span id="cb25-1"><a href=""></a><span class="fu">services</span><span class="kw">:</span></span>
-<span id="cb25-2"><a href=""></a><span class="at">  </span><span class="fu">rstudio</span><span class="kw">:</span></span>
-<span id="cb25-3"><a href=""></a><span class="at">    </span><span class="fu">image</span><span class="kw">:</span><span class="at"> rocker/rstudio:4.5.0</span></span>
-<span id="cb25-4"><a href=""></a><span class="at">    </span><span class="fu">ports</span><span class="kw">:</span></span>
-<span id="cb25-5"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="st">"8787:8787"</span></span>
-<span id="cb25-6"><a href=""></a><span class="at">    </span><span class="fu">environment</span><span class="kw">:</span></span>
-<span id="cb25-7"><a href=""></a><span class="at">      </span><span class="fu">PASSWORD</span><span class="kw">:</span><span class="at"> password</span></span>
-<span id="cb25-8"><a href=""></a><span class="at">    </span><span class="fu">volumes</span><span class="kw">:</span></span>
-<span id="cb25-9"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> ~/workspace:/home/rstudio/workspace</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</section>
-<section id="docker-renv" class="slide level2">
-<h2>Docker + <code>renv</code></h2>
-<p>You will need to install all your renv packages into a separate directory, and then ignore the the locally mounted renv library:</p>
-<div class="sourceCode" id="cb26"><pre class="sourceCode numberSource dockerfile number-lines code-with-copy"><code class="sourceCode dockerfile"><span id="cb26-1"><a href=""></a><span class="kw">FROM</span> rocker/rstudio:latest</span>
-<span id="cb26-2"><a href=""></a></span>
-<span id="cb26-3"><a href=""></a><span class="co"># Set renv library path inside the container</span></span>
-<span id="cb26-4"><a href=""></a><span class="kw">ENV</span> RENV_PATHS_ROOT=/home/rstudio/renv</span>
-<span id="cb26-5"><a href=""></a></span>
-<span id="cb26-6"><a href=""></a><span class="co"># Ensure the renv library directory exists</span></span>
-<span id="cb26-7"><a href=""></a><span class="kw">RUN</span> <span class="fu">mkdir</span> <span class="at">-p</span> /home/rstudio/renv</span>
-<span id="cb26-8"><a href=""></a></span>
-<span id="cb26-9"><a href=""></a><span class="co"># Set working directory</span></span>
-<span id="cb26-10"><a href=""></a><span class="kw">WORKDIR</span> /home/rstudio/renv</span>
-<span id="cb26-11"><a href=""></a></span>
-<span id="cb26-12"><a href=""></a><span class="co"># Copy only renv.lock and activate.R first to cache dependency installation</span></span>
-<span id="cb26-13"><a href=""></a><span class="kw">COPY</span> renv.lock renv.lock</span>
-<span id="cb26-14"><a href=""></a><span class="kw">COPY</span> renv/activate.R renv/activate.R</span>
-<span id="cb26-15"><a href=""></a></span>
-<span id="cb26-16"><a href=""></a><span class="co"># Install renv and restore packages</span></span>
-<span id="cb26-17"><a href=""></a><span class="kw">RUN</span> <span class="ex">R</span> <span class="at">-e</span> <span class="st">"install.packages('renv', repos='https://cloud.r-project.org')"</span></span>
-<span id="cb26-18"><a href=""></a><span class="kw">RUN</span> <span class="ex">R</span> <span class="at">-e</span> <span class="st">"renv::restore()"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>See this repo for docker build example: <a href="https://github.com/chendaniely/docker-renv" class="uri">https://github.com/chendaniely/docker-renv</a></p>
-</section>
-<section id="docker-compose-renv" class="slide level2">
-<h2>Docker Compose + <code>renv</code></h2>
-<p>Finally configure renv to only use the installed package library:</p>
-<div class="sourceCode" id="cb27"><pre class="sourceCode numberSource yaml number-lines code-with-copy"><code class="sourceCode yaml"><span id="cb27-1"><a href=""></a><span class="fu">services</span><span class="kw">:</span></span>
-<span id="cb27-2"><a href=""></a><span class="at">  </span><span class="fu">docker-renv</span><span class="kw">:</span></span>
-<span id="cb27-3"><a href=""></a><span class="at">    </span><span class="fu">image</span><span class="kw">:</span><span class="at"> docker-renv</span></span>
-<span id="cb27-4"><a href=""></a><span class="at">    </span><span class="fu">container_name</span><span class="kw">:</span><span class="at"> docker-renv</span></span>
-<span id="cb27-5"><a href=""></a><span class="at">    </span><span class="fu">ports</span><span class="kw">:</span></span>
-<span id="cb27-6"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="st">"8787:8787"</span></span>
-<span id="cb27-7"><a href=""></a><span class="at">    </span><span class="fu">volumes</span><span class="kw">:</span></span>
-<span id="cb27-8"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> .:/home/rstudio/work</span><span class="co">     # Mount everything...</span></span>
-<span id="cb27-9"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> /home/rstudio/work/renv</span><span class="co">  # except the renv directory, ignore that</span></span>
-<span id="cb27-10"><a href=""></a><span class="at">    </span><span class="fu">environment</span><span class="kw">:</span></span>
-<span id="cb27-11"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> RENV_PATHS_ROOT=/home/rstudio/renv</span><span class="co">    # set the renv root path</span></span>
-<span id="cb27-12"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> RENV_CONFIG_AUTOLOADER_ENABLED=FALSE</span><span class="co">  # disable renv auto load inside the container</span></span>
-<span id="cb27-13"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> DISABLE_AUTH=true</span></span>
-<span id="cb27-14"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> PASSWORD=password</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</section>
-<section id="vs-code-positron" class="slide level2">
-<h2>VS Code + Positron</h2>
-<ul>
-<li>Tools for working with containers</li>
-<li>No more RStudio!</li>
-</ul>
-</section>
-<section id="remote-container-execution" class="slide level2">
-<h2>Remote Container Execution</h2>
-<div class="sourceCode" id="cb28"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb28-1"><a href=""></a><span class="ex">docker</span> run <span class="at">--rm</span> <span class="at">-ti</span> <span class="at">-e</span> PASSWORD=password <span class="at">-p</span> 8787:8787 rocker/rstudio</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Install the Docker VS Code extension</p>
-
-<img data-src="img/vscode-dev_container.png" class="r-stretch"></section>
-<section id="remote-ssh" class="slide level2">
-<h2>Remote SSH</h2>
-<p><a href="https://positron.posit.co/remote-ssh.html" class="uri">https://positron.posit.co/remote-ssh.html</a></p>
-
-<img data-src="img/positron-remote_ssh.png" class="r-stretch"></section></section>
+</section></section>
 <section id="automation" class="title-slide slide level1 center">
 <h1>Automation</h1>
 
@@ -4815,57 +4733,57 @@ GitHub Actions <span class="github-spinner"></span>
 </section>
 <section id="publishing-yaml" class="slide level2">
 <h2>Publishing YAML</h2>
-<div class="sourceCode" id="cb29"><pre class="sourceCode numberSource yaml number-lines code-with-copy"><code class="sourceCode yaml"><span id="cb29-1"><a href=""></a><span class="fu">on</span><span class="kw">:</span><span class="co">                                                  # 1. Triggers:</span></span>
-<span id="cb29-2"><a href=""></a><span class="at">  </span><span class="fu">workflow_dispatch</span><span class="kw">:</span><span class="co">                                 #    manually</span></span>
-<span id="cb29-3"><a href=""></a><span class="at">  </span><span class="fu">push</span><span class="kw">:</span><span class="co">                                              #    changes to main branch</span></span>
-<span id="cb29-4"><a href=""></a><span class="at">    </span><span class="fu">branches</span><span class="kw">:</span><span class="at"> main</span><span class="co">                                   #</span></span>
-<span id="cb29-5"><a href=""></a></span>
-<span id="cb29-6"><a href=""></a><span class="fu">name</span><span class="kw">:</span><span class="at"> Quarto Publish</span><span class="co">                                 # 2. Name of workflow</span></span>
-<span id="cb29-7"><a href=""></a></span>
-<span id="cb29-8"><a href=""></a><span class="fu">jobs</span><span class="kw">:</span><span class="co">                                                # 3. Jobs to run on trigger</span></span>
-<span id="cb29-9"><a href=""></a><span class="at">  </span><span class="fu">build-deploy</span><span class="kw">:</span><span class="co">                                      # 4. Name of job</span></span>
-<span id="cb29-10"><a href=""></a><span class="at">    </span><span class="fu">runs-on</span><span class="kw">:</span><span class="at"> ubuntu-latest</span><span class="co">                           # 5. OS to run jobs on (runner)</span></span>
-<span id="cb29-11"><a href=""></a><span class="at">    </span><span class="fu">permissions</span><span class="kw">:</span></span>
-<span id="cb29-12"><a href=""></a><span class="at">      </span><span class="fu">contents</span><span class="kw">:</span><span class="at"> write</span></span>
-<span id="cb29-13"><a href=""></a><span class="at">    </span><span class="fu">steps</span><span class="kw">:</span><span class="co">                                           # 6. Steps to run during the job</span></span>
-<span id="cb29-14"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Check out repository</span><span class="co">                   # 7. Get the latest code from the repository</span></span>
-<span id="cb29-15"><a href=""></a><span class="at">        </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> actions/checkout@v4</span><span class="co">                    #</span></span>
-<span id="cb29-16"><a href=""></a></span>
-<span id="cb29-17"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Set up Quarto</span><span class="co">                          # 8. Install Quarto</span></span>
-<span id="cb29-18"><a href=""></a><span class="at">        </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> quarto-dev/quarto-actions/setup@v2</span><span class="co">     #</span></span>
-<span id="cb29-19"><a href=""></a></span>
-<span id="cb29-20"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Render and Publish</span><span class="co">                     # 9. Render and publish slides to github pages</span></span>
-<span id="cb29-21"><a href=""></a><span class="at">        </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> quarto-dev/quarto-actions/publish@v2</span><span class="co">   #</span></span>
-<span id="cb29-22"><a href=""></a><span class="at">        </span><span class="fu">with</span><span class="kw">:</span><span class="co">                                        #</span></span>
-<span id="cb29-23"><a href=""></a><span class="at">          </span><span class="fu">target</span><span class="kw">:</span><span class="at"> gh-pages</span><span class="co">                           #</span></span>
-<span id="cb29-24"><a href=""></a><span class="at">        </span><span class="fu">env</span><span class="kw">:</span><span class="co">                                         #</span></span>
-<span id="cb29-25"><a href=""></a><span class="at">          </span><span class="fu">GITHUB_TOKEN</span><span class="kw">:</span><span class="at"> ${{ secrets.GITHUB_TOKEN }}</span><span class="co">  #</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb24"><pre class="sourceCode numberSource yaml number-lines code-with-copy"><code class="sourceCode yaml"><span id="cb24-1"><a href=""></a><span class="fu">on</span><span class="kw">:</span><span class="co">                                                  # 1. Triggers:</span></span>
+<span id="cb24-2"><a href=""></a><span class="at">  </span><span class="fu">workflow_dispatch</span><span class="kw">:</span><span class="co">                                 #    manually</span></span>
+<span id="cb24-3"><a href=""></a><span class="at">  </span><span class="fu">push</span><span class="kw">:</span><span class="co">                                              #    changes to main branch</span></span>
+<span id="cb24-4"><a href=""></a><span class="at">    </span><span class="fu">branches</span><span class="kw">:</span><span class="at"> main</span><span class="co">                                   #</span></span>
+<span id="cb24-5"><a href=""></a></span>
+<span id="cb24-6"><a href=""></a><span class="fu">name</span><span class="kw">:</span><span class="at"> Quarto Publish</span><span class="co">                                 # 2. Name of workflow</span></span>
+<span id="cb24-7"><a href=""></a></span>
+<span id="cb24-8"><a href=""></a><span class="fu">jobs</span><span class="kw">:</span><span class="co">                                                # 3. Jobs to run on trigger</span></span>
+<span id="cb24-9"><a href=""></a><span class="at">  </span><span class="fu">build-deploy</span><span class="kw">:</span><span class="co">                                      # 4. Name of job</span></span>
+<span id="cb24-10"><a href=""></a><span class="at">    </span><span class="fu">runs-on</span><span class="kw">:</span><span class="at"> ubuntu-latest</span><span class="co">                           # 5. OS to run jobs on (runner)</span></span>
+<span id="cb24-11"><a href=""></a><span class="at">    </span><span class="fu">permissions</span><span class="kw">:</span></span>
+<span id="cb24-12"><a href=""></a><span class="at">      </span><span class="fu">contents</span><span class="kw">:</span><span class="at"> write</span></span>
+<span id="cb24-13"><a href=""></a><span class="at">    </span><span class="fu">steps</span><span class="kw">:</span><span class="co">                                           # 6. Steps to run during the job</span></span>
+<span id="cb24-14"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Check out repository</span><span class="co">                   # 7. Get the latest code from the repository</span></span>
+<span id="cb24-15"><a href=""></a><span class="at">        </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> actions/checkout@v4</span><span class="co">                    #</span></span>
+<span id="cb24-16"><a href=""></a></span>
+<span id="cb24-17"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Set up Quarto</span><span class="co">                          # 8. Install Quarto</span></span>
+<span id="cb24-18"><a href=""></a><span class="at">        </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> quarto-dev/quarto-actions/setup@v2</span><span class="co">     #</span></span>
+<span id="cb24-19"><a href=""></a></span>
+<span id="cb24-20"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Render and Publish</span><span class="co">                     # 9. Render and publish slides to github pages</span></span>
+<span id="cb24-21"><a href=""></a><span class="at">        </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> quarto-dev/quarto-actions/publish@v2</span><span class="co">   #</span></span>
+<span id="cb24-22"><a href=""></a><span class="at">        </span><span class="fu">with</span><span class="kw">:</span><span class="co">                                        #</span></span>
+<span id="cb24-23"><a href=""></a><span class="at">          </span><span class="fu">target</span><span class="kw">:</span><span class="at"> gh-pages</span><span class="co">                           #</span></span>
+<span id="cb24-24"><a href=""></a><span class="at">        </span><span class="fu">env</span><span class="kw">:</span><span class="co">                                         #</span></span>
+<span id="cb24-25"><a href=""></a><span class="at">          </span><span class="fu">GITHUB_TOKEN</span><span class="kw">:</span><span class="at"> ${{ secrets.GITHUB_TOKEN }}</span><span class="co">  #</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="github-actions-with-renv" class="slide level2">
 <h2>GitHub Actions with <code>renv</code></h2>
-<div class="sourceCode" id="cb30" data-code-line-numbers="8-17"><pre class="sourceCode numberSource yaml number-lines code-with-copy"><code class="sourceCode yaml"><span id="cb30-1"><a href=""></a><span class="at">    </span><span class="fu">steps</span><span class="kw">:</span></span>
-<span id="cb30-2"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Check out repository</span></span>
-<span id="cb30-3"><a href=""></a><span class="at">        </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> actions/checkout@v4</span></span>
-<span id="cb30-4"><a href=""></a></span>
-<span id="cb30-5"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Set up Quarto</span></span>
-<span id="cb30-6"><a href=""></a><span class="at">        </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> quarto-dev/quarto-actions/setup@v2</span></span>
-<span id="cb30-7"><a href=""></a></span>
-<span id="cb30-8"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Install R</span></span>
-<span id="cb30-9"><a href=""></a><span class="at">        </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> r-lib/actions/setup-r@v2</span></span>
-<span id="cb30-10"><a href=""></a><span class="at">        </span><span class="fu">with</span><span class="kw">:</span></span>
-<span id="cb30-11"><a href=""></a><span class="at">          </span><span class="fu">r-version</span><span class="kw">:</span><span class="at"> </span><span class="st">'4.5.0'</span><span class="co">                        # specify the version of R to use</span></span>
-<span id="cb30-12"><a href=""></a></span>
-<span id="cb30-13"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Install R Dependencies</span></span>
-<span id="cb30-14"><a href=""></a><span class="at">        </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> r-lib/actions/setup-renv@v2</span><span class="co">           # uses the renv.lock fil to install packages</span></span>
-<span id="cb30-15"><a href=""></a><span class="at">        </span><span class="fu">with</span><span class="kw">:</span></span>
-<span id="cb30-16"><a href=""></a><span class="at">          </span><span class="fu">cache-version</span><span class="kw">:</span><span class="at"> </span><span class="dv">1</span></span>
-<span id="cb30-17"><a href=""></a></span>
-<span id="cb30-18"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Render and Publish</span></span>
-<span id="cb30-19"><a href=""></a><span class="at">        </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> quarto-dev/quarto-actions/publish@v2</span></span>
-<span id="cb30-20"><a href=""></a><span class="at">        </span><span class="fu">with</span><span class="kw">:</span></span>
-<span id="cb30-21"><a href=""></a><span class="at">          </span><span class="fu">target</span><span class="kw">:</span><span class="at"> gh-pages</span></span>
-<span id="cb30-22"><a href=""></a><span class="at">        </span><span class="fu">env</span><span class="kw">:</span></span>
-<span id="cb30-23"><a href=""></a><span class="at">          </span><span class="fu">GITHUB_TOKEN</span><span class="kw">:</span><span class="at"> ${{ secrets.GITHUB_TOKEN }}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb25" data-code-line-numbers="8-17"><pre class="sourceCode numberSource yaml number-lines code-with-copy"><code class="sourceCode yaml"><span id="cb25-1"><a href=""></a><span class="at">    </span><span class="fu">steps</span><span class="kw">:</span></span>
+<span id="cb25-2"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Check out repository</span></span>
+<span id="cb25-3"><a href=""></a><span class="at">        </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> actions/checkout@v4</span></span>
+<span id="cb25-4"><a href=""></a></span>
+<span id="cb25-5"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Set up Quarto</span></span>
+<span id="cb25-6"><a href=""></a><span class="at">        </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> quarto-dev/quarto-actions/setup@v2</span></span>
+<span id="cb25-7"><a href=""></a></span>
+<span id="cb25-8"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Install R</span></span>
+<span id="cb25-9"><a href=""></a><span class="at">        </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> r-lib/actions/setup-r@v2</span></span>
+<span id="cb25-10"><a href=""></a><span class="at">        </span><span class="fu">with</span><span class="kw">:</span></span>
+<span id="cb25-11"><a href=""></a><span class="at">          </span><span class="fu">r-version</span><span class="kw">:</span><span class="at"> </span><span class="st">'4.5.0'</span><span class="co">                        # specify the version of R to use</span></span>
+<span id="cb25-12"><a href=""></a></span>
+<span id="cb25-13"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Install R Dependencies</span></span>
+<span id="cb25-14"><a href=""></a><span class="at">        </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> r-lib/actions/setup-renv@v2</span><span class="co">           # uses the renv.lock fil to install packages</span></span>
+<span id="cb25-15"><a href=""></a><span class="at">        </span><span class="fu">with</span><span class="kw">:</span></span>
+<span id="cb25-16"><a href=""></a><span class="at">          </span><span class="fu">cache-version</span><span class="kw">:</span><span class="at"> </span><span class="dv">1</span></span>
+<span id="cb25-17"><a href=""></a></span>
+<span id="cb25-18"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Render and Publish</span></span>
+<span id="cb25-19"><a href=""></a><span class="at">        </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> quarto-dev/quarto-actions/publish@v2</span></span>
+<span id="cb25-20"><a href=""></a><span class="at">        </span><span class="fu">with</span><span class="kw">:</span></span>
+<span id="cb25-21"><a href=""></a><span class="at">          </span><span class="fu">target</span><span class="kw">:</span><span class="at"> gh-pages</span></span>
+<span id="cb25-22"><a href=""></a><span class="at">        </span><span class="fu">env</span><span class="kw">:</span></span>
+<span id="cb25-23"><a href=""></a><span class="at">          </span><span class="fu">GITHUB_TOKEN</span><span class="kw">:</span><span class="at"> ${{ secrets.GITHUB_TOKEN }}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>docs: <a href="https://quarto.org/docs/publishing/github-pages.html#example-knitr-with-renv" class="uri">https://quarto.org/docs/publishing/github-pages.html#example-knitr-with-renv</a></p>
 </section></section>
 <section>
@@ -4964,8 +4882,100 @@ GitHub Actions <span class="github-spinner"></span>
 <li><p>Font, Atkinson Hyperlegible: <a href="https://www.brailleinstitute.org/freefont/" class="uri">https://www.brailleinstitute.org/freefont/</a></p></li>
 <li><p>Quarto Multiplex: <a href="https://quarto.org/docs/presentations/revealjs/presenting.html#multiplex" class="uri">https://quarto.org/docs/presentations/revealjs/presenting.html#multiplex</a></p></li>
 </ul>
-
 </section></section>
+<section>
+<section id="appendix" class="title-slide slide level1 center">
+<h1>Appendix</h1>
+
+</section>
+<section id="rstudio-server-in-the-container" class="slide level2">
+<h2>RStudio Server in the container</h2>
+<div class="sourceCode" id="cb26"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb26-1"><a href=""></a><span class="ex">docker</span> run <span class="at">--rm</span> <span class="at">-ti</span> <span class="at">-e</span> PASSWORD=password <span class="at">-p</span> 8787:8787 rocker/rstudio</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li>Open a web browser and navigate to <code>localhost:8787</code> and you will have access to RStudio in the container
+<ul>
+<li>User: <code>rstudio</code></li>
+<li>Password: <code>password</code></li>
+</ul></li>
+</ul>
+</section>
+<section id="mount-your-project-folder" class="slide level2">
+<h2>Mount your project folder</h2>
+<ul>
+<li>This is the part that is tricky if you are using <code>renv</code></li>
+<li>the <code>.Rprofile</code> and <code>renv/</code> directory will overwrite whatever has been installed in the container</li>
+</ul>
+<p>Create a <code>docker-compose.yml</code> file and run it with <code>docker-compose up -d</code></p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode numberSource yaml number-lines code-with-copy"><code class="sourceCode yaml"><span id="cb27-1"><a href=""></a><span class="fu">services</span><span class="kw">:</span></span>
+<span id="cb27-2"><a href=""></a><span class="at">  </span><span class="fu">rstudio</span><span class="kw">:</span></span>
+<span id="cb27-3"><a href=""></a><span class="at">    </span><span class="fu">image</span><span class="kw">:</span><span class="at"> rocker/rstudio:4.5.0</span></span>
+<span id="cb27-4"><a href=""></a><span class="at">    </span><span class="fu">ports</span><span class="kw">:</span></span>
+<span id="cb27-5"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="st">"8787:8787"</span></span>
+<span id="cb27-6"><a href=""></a><span class="at">    </span><span class="fu">environment</span><span class="kw">:</span></span>
+<span id="cb27-7"><a href=""></a><span class="at">      </span><span class="fu">PASSWORD</span><span class="kw">:</span><span class="at"> password</span></span>
+<span id="cb27-8"><a href=""></a><span class="at">    </span><span class="fu">volumes</span><span class="kw">:</span></span>
+<span id="cb27-9"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> ~/workspace:/home/rstudio/workspace</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="docker-renv" class="slide level2">
+<h2>Docker + <code>renv</code></h2>
+<p>You will need to install all your renv packages into a separate directory, and then ignore the the locally mounted renv library:</p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode numberSource dockerfile number-lines code-with-copy"><code class="sourceCode dockerfile"><span id="cb28-1"><a href=""></a><span class="kw">FROM</span> rocker/rstudio:latest</span>
+<span id="cb28-2"><a href=""></a></span>
+<span id="cb28-3"><a href=""></a><span class="co"># Set renv library path inside the container</span></span>
+<span id="cb28-4"><a href=""></a><span class="kw">ENV</span> RENV_PATHS_ROOT=/home/rstudio/renv</span>
+<span id="cb28-5"><a href=""></a></span>
+<span id="cb28-6"><a href=""></a><span class="co"># Ensure the renv library directory exists</span></span>
+<span id="cb28-7"><a href=""></a><span class="kw">RUN</span> <span class="fu">mkdir</span> <span class="at">-p</span> /home/rstudio/renv</span>
+<span id="cb28-8"><a href=""></a></span>
+<span id="cb28-9"><a href=""></a><span class="co"># Set working directory</span></span>
+<span id="cb28-10"><a href=""></a><span class="kw">WORKDIR</span> /home/rstudio/renv</span>
+<span id="cb28-11"><a href=""></a></span>
+<span id="cb28-12"><a href=""></a><span class="co"># Copy only renv.lock and activate.R first to cache dependency installation</span></span>
+<span id="cb28-13"><a href=""></a><span class="kw">COPY</span> renv.lock renv.lock</span>
+<span id="cb28-14"><a href=""></a><span class="kw">COPY</span> renv/activate.R renv/activate.R</span>
+<span id="cb28-15"><a href=""></a></span>
+<span id="cb28-16"><a href=""></a><span class="co"># Install renv and restore packages</span></span>
+<span id="cb28-17"><a href=""></a><span class="kw">RUN</span> <span class="ex">R</span> <span class="at">-e</span> <span class="st">"install.packages('renv', repos='https://cloud.r-project.org')"</span></span>
+<span id="cb28-18"><a href=""></a><span class="kw">RUN</span> <span class="ex">R</span> <span class="at">-e</span> <span class="st">"renv::restore()"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>See this repo for docker build example: <a href="https://github.com/chendaniely/docker-renv" class="uri">https://github.com/chendaniely/docker-renv</a></p>
+</section>
+<section id="docker-compose-renv" class="slide level2">
+<h2>Docker Compose + <code>renv</code></h2>
+<p>Finally configure renv to only use the installed package library:</p>
+<div class="sourceCode" id="cb29"><pre class="sourceCode numberSource yaml number-lines code-with-copy"><code class="sourceCode yaml"><span id="cb29-1"><a href=""></a><span class="fu">services</span><span class="kw">:</span></span>
+<span id="cb29-2"><a href=""></a><span class="at">  </span><span class="fu">docker-renv</span><span class="kw">:</span></span>
+<span id="cb29-3"><a href=""></a><span class="at">    </span><span class="fu">image</span><span class="kw">:</span><span class="at"> docker-renv</span></span>
+<span id="cb29-4"><a href=""></a><span class="at">    </span><span class="fu">container_name</span><span class="kw">:</span><span class="at"> docker-renv</span></span>
+<span id="cb29-5"><a href=""></a><span class="at">    </span><span class="fu">ports</span><span class="kw">:</span></span>
+<span id="cb29-6"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="st">"8787:8787"</span></span>
+<span id="cb29-7"><a href=""></a><span class="at">    </span><span class="fu">volumes</span><span class="kw">:</span></span>
+<span id="cb29-8"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> .:/home/rstudio/work</span><span class="co">     # Mount everything...</span></span>
+<span id="cb29-9"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> /home/rstudio/work/renv</span><span class="co">  # except the renv directory, ignore that</span></span>
+<span id="cb29-10"><a href=""></a><span class="at">    </span><span class="fu">environment</span><span class="kw">:</span></span>
+<span id="cb29-11"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> RENV_PATHS_ROOT=/home/rstudio/renv</span><span class="co">    # set the renv root path</span></span>
+<span id="cb29-12"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> RENV_CONFIG_AUTOLOADER_ENABLED=FALSE</span><span class="co">  # disable renv auto load inside the container</span></span>
+<span id="cb29-13"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> DISABLE_AUTH=true</span></span>
+<span id="cb29-14"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> PASSWORD=password</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="vs-code-positron" class="slide level2">
+<h2>VS Code + Positron</h2>
+<ul>
+<li>Tools for working with containers</li>
+<li>No more RStudio!</li>
+</ul>
+</section>
+<section id="remote-container-execution" class="slide level2">
+<h2>Remote Container Execution</h2>
+<div class="sourceCode" id="cb30"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb30-1"><a href=""></a><span class="ex">docker</span> run <span class="at">--rm</span> <span class="at">-ti</span> <span class="at">-e</span> PASSWORD=password <span class="at">-p</span> 8787:8787 rocker/rstudio</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Install the Docker VS Code extension</p>
+
+<img data-src="img/vscode-dev_container.png" class="r-stretch"></section>
+<section id="remote-ssh" class="slide level2">
+<h2>Remote SSH</h2>
+<p><a href="https://positron.posit.co/remote-ssh.html" class="uri">https://positron.posit.co/remote-ssh.html</a></p>
+
+
+<img data-src="img/positron-remote_ssh.png" class="r-stretch"></section></section>
 
     </div>
   <div class="quarto-auto-generated-content" style="display: none;">
