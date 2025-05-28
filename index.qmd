@@ -575,8 +575,6 @@ docs: <https://quarto.org/docs/publishing/github-pages.html#example-knitr-with-r
 
 ## MDS + Undergrad
 
-- Use GitHub Actions to cleanly build the textbooks on every change.
-
 DSCI 521^[Computing Platforms for Data Science]
 
   - URL: <https://ubc-mds.github.io/DSCI_521_platforms-dsci_book/>
