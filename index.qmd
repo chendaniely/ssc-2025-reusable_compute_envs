@@ -454,6 +454,7 @@ Challenge - getting an image to work on all platforms:
 
 - Docker has its own challenges and complexities if you want to work on your codebase in real-time.
   - Dev Container (VS Code only, Positron ... Soon?)
+    - <https://github.com/posit-dev/positron/issues/4691>
   - Remote SSH (VS Code + Positron)
 
 - Snapshot everything: copy your code into the container as you build the image
